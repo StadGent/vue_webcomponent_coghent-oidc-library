@@ -7,7 +7,7 @@ ENTRYPOINT ["/entrypoint.sh"]
 COPY docker/entrypoint*.sh /
 COPY package*.json ./
 
-RUN npm install --global rollup && npm  install
+RUN npm install --global rollup && npm install
 
 COPY . .
 

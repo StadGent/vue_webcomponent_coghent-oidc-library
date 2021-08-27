@@ -10,7 +10,8 @@
     "core-js": "^3.6.5",
     "graphql": "^15.5.1",
     "ts-debounce": "^3.0.0",
-    "vue": "^3.0.0"
+    "vue": "^3.0.0",
+    "vue-router": "^4.0.10"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^20.0.0",
