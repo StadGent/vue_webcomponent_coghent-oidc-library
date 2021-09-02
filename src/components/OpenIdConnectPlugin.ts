@@ -1,7 +1,7 @@
-import { App, ref, reactive, Ref, inject, watch, WatchStopHandle } from 'vue';
-import { Router, NavigationGuardNext } from 'vue-router';
+import { App, ref, reactive, Ref, inject, watch, WatchStopHandle } from "vue";
+import { Router, NavigationGuardNext } from "vue-router";
 
-const loginRedirectRouteKey = 'oidc-login-redirect-route';
+const loginRedirectRouteKey = "oidc-login-redirect-route";
 
 export interface OpenIdConnectConfiguration {
   baseUrl: string;
@@ -20,17 +20,17 @@ export interface OpenIdConnectConfiguration {
   apiCodeEndpoint?: string;
 }
 const defaultConfig: OpenIdConnectConfiguration = {
-  baseUrl: '',
+  baseUrl: "",
   serverBaseUrl: undefined,
-  tokenEndpoint: 'token',
-  authEndpoint: 'auth',
-  logoutEndpoint: 'logout',
-  clientId: '',
-  authorizedRedirectRoute: '/',
-  serverTokenEndpoint: 'token/',
-  serverRefreshEndpoint: 'refresh/',
-  internalRedirectUrl: '',
-  apiCodeEndpoint: '',
+  tokenEndpoint: "token",
+  authEndpoint: "auth",
+  logoutEndpoint: "logout",
+  clientId: "",
+  authorizedRedirectRoute: "/",
+  serverTokenEndpoint: "token/",
+  serverRefreshEndpoint: "refresh/",
+  internalRedirectUrl: "",
+  apiCodeEndpoint: "",
 };
 
 export interface OpenIdConnectUserInformation {
@@ -41,7 +41,7 @@ export interface OpenIdConnectUserInformation {
   email: string;
 }
 
-export const DefaultOIDC: unique symbol = Symbol('Auth');
+export const DefaultOIDC: unique symbol = Symbol("Auth");
 export const useAuth = () => inject<OpenIdConnectClient>(DefaultOIDC)!;
 
 export class OpenIdConnectClient {
@@ -67,9 +67,12 @@ export class OpenIdConnectClient {
       await this.sendReceivedCode(authCode);
       this.isAuthenticated.value = true;
 
-      const storedRedirectRoute = sessionStorage.getItem(loginRedirectRouteKey) || '';
+      const storedRedirectRoute =
+        sessionStorage.getItem(loginRedirectRouteKey) || "";
       sessionStorage.removeItem(loginRedirectRouteKey);
-      router.push({ path: storedRedirectRoute || this.config.authorizedRedirectRoute });
+      router.push({
+        path: storedRedirectRoute || this.config.authorizedRedirectRoute,
+      });
     } catch (e) {
       this.isAuthenticated.value = false;
       this.error.value = e;
@@ -80,11 +83,11 @@ export class OpenIdConnectClient {
   async verifyServerAuth() {
     this.loading.value = true;
     try {
-      const res = await fetch('/api/me', {
-        method: 'GET',
+      const res = await fetch("/api/me", {
+        method: "GET",
         headers: {
-          Accept: 'application/json',
-          'Content-Type': 'application/json',
+          Accept: "application/json",
+          "Content-Type": "application/json",
         },
       });
       this.isAuthenticated.value = res.status !== 401;
@@ -96,19 +99,23 @@ export class OpenIdConnectClient {
   }
 
   async sendReceivedCode(authCode: string) {
-    const { baseUrl, clientId, tokenEndpoint, internalRedirectUrl } = this.config;
+    const { baseUrl, clientId, tokenEndpoint, internalRedirectUrl } =
+      this.config;
     await fetch(`${this.config.apiCodeEndpoint}`, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
+        Accept: "application/json",
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({
         realm: baseUrl,
         authCode,
         clientId,
         tokenEndpoint,
-        redirectUri: new URL(internalRedirectUrl || '/', window.location.href).toString(),
+        redirectUri: new URL(
+          internalRedirectUrl || "/",
+          decodeURI(window.location.href)
+        ).toString(), //http:%90/localhost:8090/
       }),
     });
   }
@@ -117,17 +124,24 @@ export class OpenIdConnectClient {
     if (finalRedirectRoute) {
       sessionStorage.setItem(loginRedirectRouteKey, finalRedirectRoute);
     }
-    const { authEndpoint, baseUrl, clientId, internalRedirectUrl, scope } = this.config;
+    const { authEndpoint, baseUrl, clientId, internalRedirectUrl, scope } =
+      this.config;
     const params = new URLSearchParams({
-      scope: scope || 'openid',
+      scope: scope || "openid",
       client_id: clientId,
-      response_type: 'code',
-      redirect_uri: new URL(internalRedirectUrl || '/', window.location.href).toString(),
+      response_type: "code",
+      redirect_uri: new URL(
+        internalRedirectUrl || "/",
+        decodeURI(window.location.href)
+      ).toString(),
     });
     window.location.href = `${baseUrl}/${authEndpoint}?${params}`;
   }
 
-  async assertIsAuthenticated(dest: string, cb: NavigationGuardNext): Promise<void> {
+  async assertIsAuthenticated(
+    dest: string,
+    cb: NavigationGuardNext
+  ): Promise<void> {
     await waitTillFalse(this.loading);
     if (this.isAuthenticated.value) {
       return cb();
