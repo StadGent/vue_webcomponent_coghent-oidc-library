@@ -115,7 +115,7 @@ export class OpenIdConnectClient {
         redirectUri: new URL(
           internalRedirectUrl || "/",
           decodeURI(window.location.href)
-        ).toString(), //http:%90/localhost:8090/
+        ).toString(),
       }),
     });
   }
