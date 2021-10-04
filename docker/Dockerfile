@@ -1,5 +1,5 @@
 ### Development stage
-FROM  registry-dev.cloud.inuits.io/node:lts as development-stage
+FROM node:lts as development-stage
 
 WORKDIR /app
 ENTRYPOINT ["/entrypoint.sh"]
