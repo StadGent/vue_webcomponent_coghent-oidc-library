@@ -20,17 +20,17 @@ export interface OpenIdConnectConfiguration {
   apiCodeEndpoint?: string;
 }
 const defaultConfig: OpenIdConnectConfiguration = {
-  baseUrl: "",
+  baseUrl: '',
   serverBaseUrl: undefined,
-  tokenEndpoint: "token",
-  authEndpoint: "auth",
-  logoutEndpoint: "logout",
-  clientId: "",
-  authorizedRedirectRoute: "/",
-  serverTokenEndpoint: "token/",
-  serverRefreshEndpoint: "refresh/",
-  internalRedirectUrl: "",
-  apiCodeEndpoint: "",
+  tokenEndpoint: 'token',
+  authEndpoint: 'auth',
+  logoutEndpoint: 'logout',
+  clientId: '',
+  authorizedRedirectRoute: '/',
+  serverTokenEndpoint: 'token/',
+  serverRefreshEndpoint: 'refresh/',
+  internalRedirectUrl: '',
+  apiCodeEndpoint: '/api/auth_code',
 };
 
 export interface OpenIdConnectUserInformation {
@@ -41,7 +41,7 @@ export interface OpenIdConnectUserInformation {
   email: string;
 }
 
-export const DefaultOIDC: unique symbol = Symbol("Auth");
+export const DefaultOIDC: unique symbol = Symbol('Auth');
 export const useAuth = () => inject<OpenIdConnectClient>(DefaultOIDC)!;
 
 export class OpenIdConnectClient {
@@ -66,12 +66,13 @@ export class OpenIdConnectClient {
     try {
       await this.sendReceivedCode(authCode);
       this.isAuthenticated.value = true;
-
+      console.log('PROCESSAUTHCODE');
       const storedRedirectRoute =
-        sessionStorage.getItem(loginRedirectRouteKey) || "";
+        sessionStorage.getItem(loginRedirectRouteKey) || '';
       sessionStorage.removeItem(loginRedirectRouteKey);
+      console.log(this.config.authorizedRedirectRoute);
       router.push({
-        path: storedRedirectRoute || this.config.authorizedRedirectRoute,
+        path: storedRedirectRoute,
       });
     } catch (e) {
       this.isAuthenticated.value = false;
@@ -83,11 +84,11 @@ export class OpenIdConnectClient {
   async verifyServerAuth() {
     this.loading.value = true;
     try {
-      const res = await fetch("/api/me", {
-        method: "GET",
+      const res = await fetch('/api/me', {
+        method: 'GET',
         headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json",
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
         },
       });
       this.isAuthenticated.value = res.status !== 401;
@@ -99,13 +100,14 @@ export class OpenIdConnectClient {
   }
 
   async sendReceivedCode(authCode: string) {
+    console.log("SENDRECEIVECODE");
     const { baseUrl, clientId, tokenEndpoint, internalRedirectUrl } =
       this.config;
     await fetch(`${this.config.apiCodeEndpoint}`, {
-      method: "POST",
+      method: 'POST',
       headers: {
-        Accept: "application/json",
-        "Content-Type": "application/json",
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
       },
       body: JSON.stringify({
         realm: baseUrl,
@@ -113,7 +115,7 @@ export class OpenIdConnectClient {
         clientId,
         tokenEndpoint,
         redirectUri: new URL(
-          internalRedirectUrl || "/",
+          internalRedirectUrl || this.config.authorizedRedirectRoute,
           decodeURI(window.location.href)
         ).toString(),
       }),
@@ -127,15 +129,15 @@ export class OpenIdConnectClient {
     const { authEndpoint, baseUrl, clientId, internalRedirectUrl, scope } =
       this.config;
     const params = new URLSearchParams({
-      scope: scope || "openid",
+      scope: scope || 'openid',
       client_id: clientId,
-      response_type: "code",
+      response_type: 'code',
       redirect_uri: new URL(
-        internalRedirectUrl || "/",
+        internalRedirectUrl || this.config.authorizedRedirectRoute,
         decodeURI(window.location.href)
       ).toString(),
     });
-    window.location.href = `${baseUrl}/${authEndpoint}?${params}`;
+    window.location.href = `${baseUrl}${authEndpoint}?${params}`;
   }
 
   async assertIsAuthenticated(
