@@ -1,7 +1,6 @@
 {
   "name": "session-vue-3-oidc-library",
   "version": "0.1.0",
-  "private": true,
   "scripts": {
     "build": "rollup -c",
     "dev": "rollup -c -w",
@@ -13,6 +12,9 @@
     "ts-debounce": "^3.0.0",
     "vue": "^3.0.0",
     "vue-router": "^4.0.10"
+  },
+  "publishConfig": {
+    "registry": "https://nexus.inuits.io/repository/npm-private"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^20.0.0",
