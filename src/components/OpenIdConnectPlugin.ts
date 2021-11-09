@@ -66,11 +66,9 @@ export class OpenIdConnectClient {
     try {
       await this.sendReceivedCode(authCode);
       this.isAuthenticated.value = true;
-      console.log('PROCESSAUTHCODE');
       const storedRedirectRoute =
         sessionStorage.getItem(loginRedirectRouteKey) || '';
       sessionStorage.removeItem(loginRedirectRouteKey);
-      console.log(this.config.authorizedRedirectRoute);
       router.push({
         path: storedRedirectRoute,
       });
@@ -100,7 +98,6 @@ export class OpenIdConnectClient {
   }
 
   async sendReceivedCode(authCode: string) {
-    console.log("SENDRECEIVECODE");
     const { baseUrl, clientId, tokenEndpoint, internalRedirectUrl } =
       this.config;
     await fetch(`${this.config.apiCodeEndpoint}`, {
