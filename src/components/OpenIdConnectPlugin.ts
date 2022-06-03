@@ -49,12 +49,16 @@ export class OpenIdConnectClient {
   loading: Ref<boolean>
   error: Ref<any>
   config: OpenIdConnectConfiguration
+  authCode: Ref<string | null>
+  user: Ref<string | null>
 
   constructor(config: Partial<OpenIdConnectConfiguration>) {
     this.isAuthenticated = ref(false)
     this.loading = ref(false)
     this.error = ref(undefined)
     this.config = reactive({ ...defaultConfig, ...config })
+    this.authCode = ref(null)
+    this.user = ref(null)
   }
 
   install(app: App) {
@@ -66,6 +70,7 @@ export class OpenIdConnectClient {
     try {
       await this.sendReceivedCode(authCode)
       this.isAuthenticated.value = true
+      this.authCode.value = authCode
       const storedRedirectRoute =
         sessionStorage.getItem(loginRedirectRouteKey) || ""
       sessionStorage.removeItem(loginRedirectRouteKey)
@@ -88,9 +93,13 @@ export class OpenIdConnectClient {
           Accept: "application/json",
         },
       })
+      res.status !== 401 ? this.user.value = await res.json() as string : null
+      console.log(`* RES status`, res.status)
       this.isAuthenticated.value = res.status !== 401
     } catch (e) {
       this.isAuthenticated.value = false
+      this.authCode.value = null
+      this.user.value = null
       this.error.value = e
     }
     this.loading.value = false
@@ -119,6 +128,7 @@ export class OpenIdConnectClient {
   }
 
   redirectToLogin(finalRedirectRoute?: string) {
+    console.log(`* RedirectToLogin`);
     if (finalRedirectRoute) {
       sessionStorage.setItem(loginRedirectRouteKey, finalRedirectRoute)
     }
@@ -140,6 +150,7 @@ export class OpenIdConnectClient {
     dest: string,
     cb: NavigationGuardNext
   ): Promise<void> {
+    console.log(`*assertIsAuthenticated`)
     await waitTillFalse(this.loading)
     if (this.isAuthenticated.value) {
       return cb()
@@ -151,6 +162,13 @@ export class OpenIdConnectClient {
     }
     this.redirectToLogin(dest)
     return cb(false)
+  }
+
+  resetAuthProperties() {
+    console.log(`* resetAuthProperties`);
+    this.user.value = null
+    this.authCode.value = null
+    this.isAuthenticated.value = false
   }
 }
 
