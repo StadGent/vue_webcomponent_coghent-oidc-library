@@ -162,8 +162,8 @@ export class OpenIdConnectClient {
   }
 
   resetAuthProperties() {
-    this.user.value = null
-    this.authCode.value = null
+    this.user != null ? this.user.value = null : this.user
+    this.authCode != null ? this.authCode.value = null : this.authCode
     this.isAuthenticated.value = false
   }
 }
