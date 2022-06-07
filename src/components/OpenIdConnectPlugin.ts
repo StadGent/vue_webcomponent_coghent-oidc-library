@@ -94,7 +94,6 @@ export class OpenIdConnectClient {
         },
       })
       res.status !== 401 ? this.user.value = await res.json() as string : null
-      console.log(`* RES status`, res.status)
       this.isAuthenticated.value = res.status !== 401
     } catch (e) {
       this.isAuthenticated.value = false
@@ -128,7 +127,6 @@ export class OpenIdConnectClient {
   }
 
   redirectToLogin(finalRedirectRoute?: string) {
-    console.log(`* RedirectToLogin`);
     if (finalRedirectRoute) {
       sessionStorage.setItem(loginRedirectRouteKey, finalRedirectRoute)
     }
@@ -150,7 +148,6 @@ export class OpenIdConnectClient {
     dest: string,
     cb: NavigationGuardNext
   ): Promise<void> {
-    console.log(`*assertIsAuthenticated`)
     await waitTillFalse(this.loading)
     if (this.isAuthenticated.value) {
       return cb()
@@ -165,7 +162,6 @@ export class OpenIdConnectClient {
   }
 
   resetAuthProperties() {
-    console.log(`* resetAuthProperties`);
     this.user.value = null
     this.authCode.value = null
     this.isAuthenticated.value = false
