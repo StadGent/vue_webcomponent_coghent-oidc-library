@@ -45,21 +45,21 @@ export const DefaultOIDC: unique symbol = Symbol("Auth")
 export const useAuth = () => inject<OpenIdConnectClient>(DefaultOIDC)!
 
 export class OpenIdConnectClient {
-  isAuthenticated: Ref<boolean>
+  isAuthenticated: boolean
   loading: Ref<boolean>
-  error: Ref<any>
+  error: any
   config: OpenIdConnectConfiguration
-  authCode: Ref<string | null>
-  user: Ref<string | null>
+  authCode: string | null
+  user: string | null
 
   constructor(config: Partial<OpenIdConnectConfiguration>) {
-    console.log(`>OpenIdConnectClient v0.1.6`)
-    this.isAuthenticated = ref(false)
+    console.log(`>OpenIdConnectClient v0.1.7`)
+    this.isAuthenticated = false
     this.loading = ref(false)
-    this.error = ref(undefined)
+    this.error = undefined
     this.config = reactive({ ...defaultConfig, ...config })
-    this.authCode = ref(null)
-    this.user = ref(null)
+    this.authCode = null
+    this.user = null
   }
 
   install(app: App) {
@@ -70,8 +70,8 @@ export class OpenIdConnectClient {
     this.loading.value = true
     try {
       await this.sendReceivedCode(authCode)
-      this.isAuthenticated.value = true
-      this.authCode.value = authCode
+      this.isAuthenticated = true
+      this.authCode = authCode
       const storedRedirectRoute =
         sessionStorage.getItem(loginRedirectRouteKey) || ""
       sessionStorage.removeItem(loginRedirectRouteKey)
@@ -79,14 +79,13 @@ export class OpenIdConnectClient {
         path: storedRedirectRoute,
       })
     } catch (e) {
-      this.isAuthenticated.value = false
-      this.error.value = e
+      this.isAuthenticated = false
+      this.error = e
     }
     this.loading.value = false
   }
 
   async verifyServerAuth() {
-    console.log(`>OpenIdConnectClient >this`, this)
     this.loading.value = true
     try {
       const res = await fetch("/api/me", {
@@ -95,13 +94,13 @@ export class OpenIdConnectClient {
           Accept: "application/json",
         },
       })
-      res.status !== 401 ? this.user.value = await res.json() as string : null
-      this.isAuthenticated.value = res.status !== 401
+      res.status !== 401 ? this.user = await res.json() as string : null
+      this.isAuthenticated = res.status !== 401
     } catch (e) {
-      this.isAuthenticated.value = false
-      this.user != null ? this.user.value = null : this.user
-      this.authCode != null ? this.authCode.value = null : this.authCode
-      this.error.value = e
+      this.isAuthenticated = false
+      this.user = null
+      this.authCode = null
+      this.error = e
     }
     this.loading.value = false
   }
@@ -151,12 +150,12 @@ export class OpenIdConnectClient {
     cb: NavigationGuardNext
   ): Promise<void> {
     await waitTillFalse(this.loading)
-    if (this.isAuthenticated.value) {
+    if (this.isAuthenticated) {
       return cb()
     }
     await this.verifyServerAuth()
     await waitTillFalse(this.loading)
-    if (this.isAuthenticated.value) {
+    if (this.isAuthenticated) {
       return cb()
     }
     this.redirectToLogin(dest)
@@ -164,9 +163,9 @@ export class OpenIdConnectClient {
   }
 
   resetAuthProperties() {
-    this.user != null ? this.user.value = null : this.user
-    this.authCode != null ? this.authCode.value = null : this.authCode
-    this.isAuthenticated.value = false
+    this.isAuthenticated = false
+    this.user = null
+    this.authCode = null
   }
 }
 
