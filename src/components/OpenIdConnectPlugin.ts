@@ -53,7 +53,7 @@ export class OpenIdConnectClient {
   user: Ref<string | null>
 
   constructor(config: Partial<OpenIdConnectConfiguration>) {
-    console.log(`>OpenIdConnectClient v0.1.5`)
+    console.log(`>OpenIdConnectClient v0.1.6`)
     this.isAuthenticated = ref(false)
     this.loading = ref(false)
     this.error = ref(undefined)
@@ -86,6 +86,7 @@ export class OpenIdConnectClient {
   }
 
   async verifyServerAuth() {
+    console.log(`>OpenIdConnectClient >this`, this)
     this.loading.value = true
     try {
       const res = await fetch("/api/me", {
@@ -98,8 +99,8 @@ export class OpenIdConnectClient {
       this.isAuthenticated.value = res.status !== 401
     } catch (e) {
       this.isAuthenticated.value = false
-      this.authCode.value = null
-      this.user.value = null
+      this.user != null ? this.user.value = null : this.user
+      this.authCode != null ? this.authCode.value = null : this.authCode
       this.error.value = e
     }
     this.loading.value = false
