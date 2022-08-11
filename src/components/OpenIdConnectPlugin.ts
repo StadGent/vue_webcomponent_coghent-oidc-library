@@ -44,12 +44,12 @@ export interface OpenIdConnectUserInformation {
 export const DefaultOIDC: unique symbol = Symbol("Auth")
 export const useAuth = () => inject<OpenIdConnectClient>(DefaultOIDC)!
 
+
 export class OpenIdConnectClient {
   isAuthenticated: boolean
   loading: Ref<boolean>
   error: any
   config: OpenIdConnectConfiguration
-  authCode: string | null
   user: string | null
 
   constructor(config: Partial<OpenIdConnectConfiguration>) {
@@ -58,7 +58,6 @@ export class OpenIdConnectClient {
     this.loading = ref(false)
     this.error = undefined
     this.config = reactive({ ...defaultConfig, ...config })
-    this.authCode = null
     this.user = null
   }
 
@@ -71,7 +70,6 @@ export class OpenIdConnectClient {
     try {
       await this.sendReceivedCode(authCode)
       this.isAuthenticated = true
-      this.authCode = authCode
       const storedRedirectRoute =
         sessionStorage.getItem(loginRedirectRouteKey) || ""
       sessionStorage.removeItem(loginRedirectRouteKey)
@@ -88,18 +86,23 @@ export class OpenIdConnectClient {
   async verifyServerAuth() {
     this.loading.value = true
     try {
-      const res = await fetch("/api/me", {
+      const response = await fetch("/api/me", {
         method: "GET",
         headers: {
           Accept: "application/json",
         },
       })
-      res.status !== 401 ? this.user = await res.json() as string : null
-      this.isAuthenticated = res.status !== 401
+      if (response) {
+        this.user = await response.json()
+        if (response.status) this.isAuthenticated = response.status !== 401
+        console.log(`OIDC | verifyserverauth | this`, this)
+      } else {
+        console.log(`verifyserverauth ELSE`, response)
+      }
     } catch (e) {
+      console.log(`OIDC catched`, e)
       this.isAuthenticated = false
       this.user = null
-      this.authCode = null
       this.error = e
     }
     this.loading.value = false
@@ -151,6 +154,8 @@ export class OpenIdConnectClient {
   ): Promise<void> {
     await waitTillFalse(this.loading)
     if (this.isAuthenticated) {
+      console.log(`OIDC | is authenticated`)
+      console.log(`OIDC | assert is authenticated`, this)
       return cb()
     }
     await this.verifyServerAuth()
@@ -165,7 +170,6 @@ export class OpenIdConnectClient {
   resetAuthProperties() {
     this.isAuthenticated = false
     this.user = null
-    this.authCode = null
   }
 }
 
