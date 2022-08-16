@@ -95,7 +95,6 @@ export class OpenIdConnectClient {
       if (response) {
         this.user = await response.json()
         if (response.status) this.isAuthenticated.value = response.status !== 401
-        console.log(`OIDC | verifyserverauth | this`, this)
       }
     } catch (e) {
       this.isAuthenticated.value = false
