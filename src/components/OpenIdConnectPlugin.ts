@@ -53,7 +53,7 @@ export class OpenIdConnectClient {
   user: string | null
 
   constructor(config: Partial<OpenIdConnectConfiguration>) {
-    console.log(`>OpenIdConnectClient v0.1.7`)
+    console.log(`>OpenIdConnectClient v0.1.8`)
     this.isAuthenticated = ref(false)
     this.loading = ref(false)
     this.error = undefined
