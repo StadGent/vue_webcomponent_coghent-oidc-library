@@ -1,6 +1,6 @@
 {
   "name": "session-vue-3-oidc-library",
-  "version": "0.1.32",
+  "version": "0.1.40",
   "scripts": {
     "build": "rollup -c",
     "dev": "rollup -c -w",
