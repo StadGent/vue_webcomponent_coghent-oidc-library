@@ -40,9 +40,9 @@ export interface OpenIdConnectUserInformation {
 }
 
 export const DefaultOIDC: unique symbol = Symbol("Auth");
-export const useAuth = () => inject<OpenIdConnectClient>(DefaultOIDC)!;
+export const useAuth = () => inject<OpenIdConnect>(DefaultOIDC)!;
 
-export class OpenIdConnectClient {
+export class OpenIdConnectClient implements OpenIdConnect {
   isAuthenticated: Ref<boolean>;
   loading: Ref<boolean>;
   error: unknown;
@@ -161,7 +161,7 @@ export class OpenIdConnectClient {
     this.user = null;
   }
 
-  async logout() {
+  async logout(): Promise<void> {
     return fetch("/api/logout").then(() => {
       this.resetAuthProperties();
     });
@@ -180,4 +180,17 @@ async function waitTillFalse(x: Ref<unknown>): Promise<void> {
       }
     });
   });
+}
+
+export interface OpenIdConnect {
+  install(app: App): void;
+  changeRedirectRoute(route: string): Promise<void>;
+  processAuthCode(authCode: string): Promise<void>;
+  verifyServerAuth(): Promise<void>;
+  sendReceivedCode(authCode: string): Promise<void>;
+  redirectToLogin(): void;
+  assertIsAuthenticated(dest: string, cb: NavigationGuardNext): Promise<void>;
+  resetAuthProperties(): void;
+  resetAuthProperties(): void;
+  logout(): Promise<void>;
 }
